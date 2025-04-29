@@ -69,7 +69,7 @@
         #configPopup {
             position: fixed;
             top: 50%;
-            left: 25%;
+            left: 50%;
             transform: translate(-50%, -50%);
             background: white;
             padding: 20px;
@@ -77,11 +77,18 @@
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             z-index: 100;
-            min-width: 500px;
-            max-width: 90%;
+            width: 90%;
             max-height: 90vh;
             overflow-y: auto;
             display: none;
+        }
+        @media (min-width: 768px) {
+            #configPopup {
+                width: 500px;
+                max-width: 90%;
+                left: 25%;
+                transform: translate(-50%, -50%);
+            }
         }
         #overlay {
             position: fixed;
@@ -96,19 +103,37 @@
         .form-group {
             margin-bottom: 15px;
             display: flex;
-            align-items: center;
+            flex-direction: column;
+        }
+        @media (min-width: 768px) {
+            .form-group {
+                flex-direction: row;
+                align-items: center;
+            }
         }
         label {
             font-family: Arial, sans-serif;
-            width: 40%;
-            margin-right: 10px;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        @media (min-width: 768px) {
+            label {
+                width: 40%;
+                margin-right: 10px;
+                margin-bottom: 0;
+            }
         }
         input, textarea {
-            width: 60%;
+            width: 100%;
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-family: Arial, sans-serif;
+        }
+        @media (min-width: 768px) {
+            input, textarea {
+                width: 60%;
+            }
         }
         .button-group {
             display: flex;
@@ -132,6 +157,15 @@
             right: 10px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 24px;
+        }
+        @media (max-width: 767px) {
+            #closePopup {
+                top: 10px;
+                right: 15px;
+                font-size: 48px;
+                padding: 5px 10px;
+            }
         }
     </style>
 </head>
