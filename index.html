@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Interactive Progress Bar</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: linear-gradient(to bottom right, #f3e8ff, #fce7f3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+        }
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #successMessage {
+            position: absolute;
+            top: 80%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: Arial, sans-serif;
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="progressCanvas"></canvas>
+    <div id="successMessage"></div>
+
+    <script>
+        // Default configuration
+        const config = {
+            clicksToFull: 5,
+            rotation: 0,
+            length: 0.8, // Percentage of screen width (0-1)
+            leftEnd: 1,  // 1 for one semicircle, 2 for two
+            rightEnd: 1, // 1 for one semicircle, 2 for two
+            leftSemicircleSize: 0, // Will be calculated based on bar height
+            rightSemicircleSize: 0, // Will be calculated based on bar height
+            successMessage: "Congratulations!" // Default success message
+        };
+
+        // Canvas and context
+        const canvas = document.getElementById('progressCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Success message element
+        const successMessageEl = document.getElementById('successMessage');
+        
+        // Progress state
+        let currentProgress = 0;
+        
+        // Colors
+        const colors = {
+            background: 'rgba(255, 255, 255, 0.3)',
+            progressStart: '#9333ea', // Purple
+            progressMiddle: '#ec4899', // Pink
+            progressEnd: '#ef4444', // Red
+            circleEmpty: '#f3e9f6', // Light gray
+            shadow: 'rgba(0, 0, 0, 0.1)'
+        };
+
+        // Parse hash parameters
+        function parseHash() {
+            const hash = window.location.hash.substring(1);
+            if (!hash) return;
+
+            const params = new URLSearchParams(hash);
+            config.clicksToFull = parseInt(params.get('clicks')) || config.clicksToFull;
+            config.rotation = parseInt(params.get('rotation')) || config.rotation;
+            config.length = parseFloat(params.get('length')) / 100 || config.length;
+            config.leftEnd = parseInt(params.get('leftEnd')) || config.leftEnd;
+            config.rightEnd = parseInt(params.get('rightEnd')) || config.rightEnd;
+            
+            // We'll calculate these based on bar height later
+            if (params.get('leftSemicircleSize')) {
+                config.leftSemicircleSize = parseInt(params.get('leftSemicircleSize'));
+            }
+            if (params.get('rightSemicircleSize')) {
+                config.rightSemicircleSize = parseInt(params.get('rightSemicircleSize'));
+            }
+            
+            // Get success message if provided
+            if (params.get('message')) {
+                config.successMessage = decodeURIComponent(params.get('message'));
+            }
+            
+            // Handle base64 encoded JSON configuration
+            if (params.get('b64')) {
+                try {
+                    const decoded = atob(params.get('b64'));
+                    const jsonConfig = JSON.parse(decoded);
+                    
+                    // Apply all properties from the decoded JSON to the config
+                    Object.assign(config, jsonConfig);
+                } catch (error) {
+                    console.error('Error decoding base64 configuration:', error);
+                }
+            }
+        }
+
+        // Confetti effect function
+        function fireConfetti() {
+            const duration = 3000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+                
+                // Use different colors for confetti
+                confetti({
+                    ...defaults,
+                    particleCount,
+                    origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+                    colors: ['#9333ea', '#a855f7', '#ec4899', '#ef4444'],
+                });
+                confetti({
+                    ...defaults,
+                    particleCount,
+                    origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+                    colors: ['#9333ea', '#a855f7', '#ec4899', '#ef4444'],
+                });
+            }, 250);
+        }
+
+        // Create gradient for progress bar
+        function createProgressGradient(x, width) {
+            const gradient = ctx.createLinearGradient(x, 0, x + width, 0);
+            gradient.addColorStop(0, colors.progressStart);
+            gradient.addColorStop(0.5, colors.progressMiddle);
+            gradient.addColorStop(1, colors.progressEnd);
+            return gradient;
+        }
+
+        // Apply gradient to success message
+        function applyGradientToMessage() {
+            successMessageEl.style.backgroundImage = `linear-gradient(to right, ${colors.progressStart}, ${colors.progressMiddle}, ${colors.progressEnd})`;
+        }
+
+        // Draw a circle with shadow
+        function drawCircle(x, y, radius, color) {
+            ctx.save();
+            
+            // Shadow
+            ctx.shadowColor = colors.shadow;
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            // Circle
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+            
+            ctx.restore();
+        }
+
+        // Draw progress bar and circles
+        function drawProgress() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Calculate dimensions
+            const barHeight = 64; // 10% of height, max 64px
+            const barWidth = canvas.width * config.length;
+            const barX = (canvas.width - barWidth) / 2;
+            const barY = (canvas.height - barHeight) / 2;
+            
+            // Calculate progress width
+            const progressWidth = barWidth * (currentProgress / 100);
+            
+            // Calculate circle sizes
+            const leftSize = config.leftSemicircleSize || barHeight / 2;
+            const rightSize = config.rightSemicircleSize || barHeight / 2;
+            
+            // Save context for rotation
+            ctx.save();
+            
+            // Translate to center for rotation
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(config.rotation * Math.PI / 180);
+            ctx.translate(-canvas.width / 2, -canvas.height / 2);
+            
+            // Draw background bar
+            ctx.fillStyle = colors.background;
+            ctx.shadowColor = colors.shadow;
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.fillRect(barX, barY, barWidth, barHeight);
+            
+            // Draw progress bar
+            ctx.fillStyle = createProgressGradient(barX, barWidth);
+            ctx.shadowBlur = 0; // No shadow for progress
+            ctx.fillRect(barX, barY, progressWidth, barHeight);
+            
+            // Reset shadow
+            ctx.shadowBlur = 0;
+            
+            // Draw left circles
+            if (config.leftEnd >= 1) {
+                const leftCircle1X = barX;
+                const leftCircle1Y = barY + barHeight / 2;
+                
+                if (config.leftEnd >= 2) {
+                    // Two circles on left end
+                    drawCircle(
+                        leftCircle1X, 
+                        leftCircle1Y - leftSize * 0.8, 
+                        leftSize, 
+                        createProgressGradient(barX, barWidth)
+                    );
+                    
+                    drawCircle(
+                        leftCircle1X, 
+                        leftCircle1Y + leftSize * 0.8, 
+                        leftSize, 
+                        createProgressGradient(barX, barWidth)
+                    );
+                } else {
+                    // One circle on left end
+                    drawCircle(
+                        leftCircle1X, 
+                        leftCircle1Y, 
+                        leftSize, 
+                        createProgressGradient(barX, barWidth)
+                    );
+                }
+            }
+            
+            // Draw right circles
+            if (config.rightEnd >= 1) {
+                const rightCircle1X = barX + barWidth;
+                const rightCircle1Y = barY + barHeight / 2;
+                
+                if (config.rightEnd >= 2) {
+                    // Two circles on right end
+                    drawCircle(
+                        rightCircle1X, 
+                        rightCircle1Y - rightSize * 0.8, 
+                        rightSize, 
+                        currentProgress >= 99 ? createProgressGradient(barX, barWidth) : colors.circleEmpty
+                    );
+                    
+                    drawCircle(
+                        rightCircle1X, 
+                        rightCircle1Y + rightSize * 0.8, 
+                        rightSize, 
+                        currentProgress >= 99 ? createProgressGradient(barX, barWidth) : colors.circleEmpty
+                    );
+                } else {
+                    // One circle on right end
+                    drawCircle(
+                        rightCircle1X, 
+                        rightCircle1Y, 
+                        rightSize, 
+                        currentProgress >= 99 ? createProgressGradient(barX, barWidth) : colors.circleEmpty
+                    );
+                }
+            }
+            
+            // Restore context
+            ctx.restore();
+        }
+
+        // Show success message
+        function showSuccessMessage() {
+            successMessageEl.textContent = config.successMessage;
+            applyGradientToMessage();
+            successMessageEl.style.opacity = 1;
+        }
+
+        // Hide success message
+        function hideSuccessMessage() {
+            successMessageEl.style.opacity = 0;
+        }
+
+        // Update progress
+        function updateProgress(progress) {
+            currentProgress = progress;
+            drawProgress();
+            
+            // Fire confetti and show message when progress bar is full
+            if (progress >= 100) {
+                fireConfetti();
+                showSuccessMessage();
+            } else {
+                hideSuccessMessage();
+            }
+        }
+
+        // Resize canvas to window size
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            drawProgress();
+        }
+
+        // Handle clicks
+        function handleClick(event) {
+            currentProgress = Math.min(currentProgress + (100 / config.clicksToFull), 100);
+            updateProgress(currentProgress);
+        }
+
+        // Initialize
+        function init() {
+            parseHash();
+            resizeCanvas();
+            updateProgress(0);
+            
+            // Event listeners
+            window.addEventListener('resize', resizeCanvas);
+            canvas.addEventListener('click', handleClick);
+        }
+
+        // Start the app
+        init();
+    </script>
+</body>
+</html>
