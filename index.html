@@ -39,46 +39,224 @@
             color: transparent;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
+        #controls {
+            position: absolute;
+            top: 90%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            gap: 20px;
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+        }
+        #controls:hover {
+            opacity: 0.9;
+        }
+        #controls a {
+            color: rgba(0, 0, 0, 0.5);
+            text-decoration: none;
+            font-family: Arial, sans-serif;
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        #controls a:hover {
+            background: rgba(255, 255, 255, 0.5);
+            color: rgba(0, 0, 0, 0.7);
+        }
+        #configPopup {
+            position: fixed;
+            top: 50%;
+            left: 25%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            padding-top: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            min-width: 500px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            display: none;
+        }
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+            display: none;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        label {
+            font-family: Arial, sans-serif;
+            width: 40%;
+            margin-right: 10px;
+        }
+        input, textarea {
+            width: 60%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: Arial, sans-serif;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+        }
+        #generateLink {
+            background: #9333ea;
+            color: white;
+        }
+        #closePopup {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <canvas id="progressCanvas"></canvas>
     <div id="successMessage"></div>
+    <div id="controls">
+        <button id="restartBtn">Restart</button>
+        <button id="editBtn">Edit</button>
+    </div>
+
+    <div id="overlay"></div>
+    <div id="configPopup">
+        <div id="closePopup">×</div>
+        <div class="form-group">
+            <label for="clicksToFull">Clicks to complete:</label>
+            <div style="display: flex; width: 60%;">
+                <input type="range" id="clicksToFullRange" min="1" max="100" value="5" style="flex: 1; margin-right: 10px;">
+                <input type="number" id="clicksToFull" min="1" max="100" value="5" style="width: 60px;">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="rotation">Rotation (degrees):</label>
+            <div style="display: flex; width: 60%;">
+                <input type="range" id="rotationRange" min="-360" max="360" value="0" style="flex: 1; margin-right: 10px;">
+                <input type="number" id="rotation" min="-360" max="360" value="0" style="width: 60px;">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="height">Height (px):</label>
+            <div style="display: flex; width: 60%;">
+                <input type="range" id="heightRange" min="10" max="100" value="64" style="flex: 1; margin-right: 10px;">
+                <input type="number" id="height" min="10" max="100" value="64" style="width: 60px;">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="length">Length (%):</label>
+            <div style="display: flex; width: 60%;">
+                <input type="range" id="lengthRange" min="10" max="100" value="80" style="flex: 1; margin-right: 10px;">
+                <input type="number" id="length" min="10" max="100" value="80" style="width: 60px;">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="leftEnd">Left end circles (1-2):</label>
+            <div style="display: flex; width: 60%;">
+                <input type="range" id="leftEndRange" min="1" max="2" value="1" step="1" style="flex: 1; margin-right: 10px;">
+                <input type="number" id="leftEnd" min="1" max="2" value="1" style="width: 60px;">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="rightEnd">Right end circles (1-2):</label>
+            <div style="display: flex; width: 60%;">
+                <input type="range" id="rightEndRange" min="1" max="2" value="1" step="1" style="flex: 1; margin-right: 10px;">
+                <input type="number" id="rightEnd" min="1" max="2" value="1" style="width: 60px;">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="leftSemicircleSize">Left circle size (px):</label>
+            <div style="display: flex; width: 60%;">
+                <input type="range" id="leftSemicircleSizeRange" min="0" max="100" value="0" style="flex: 1; margin-right: 10px;">
+                <input type="number" id="leftSemicircleSize" min="0" max="100" value="0" style="width: 60px;">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="rightSemicircleSize">Right circle size (px):</label>
+            <div style="display: flex; width: 60%;">
+                <input type="range" id="rightSemicircleSizeRange" min="0" max="100" value="0" style="flex: 1; margin-right: 10px;">
+                <input type="number" id="rightSemicircleSize" min="0" max="100" value="0" style="width: 60px;">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="successMessage">Success message:</label>
+            <input type="text" id="successMessageInput" value="Congratulations!">
+        </div>
+        <div class="form-group">
+            <label for="showButtons">Show control buttons:</label>
+            <input type="checkbox" id="showButtons" checked>
+        </div>
+        <div class="form-group">
+            <label for="encryptConfig">Encrypt configuration:</label>
+            <input type="checkbox" id="encryptConfig">
+        </div>
+        <div class="form-group">
+            <label for="shareableLink">Shareable link:</label>
+            <input type="text" id="shareableLink" readonly>
+        </div>
+    </div>
 
     <script>
-        // Default configuration
-        const config = {
+        let config = {
             clicksToFull: 5,
             rotation: 0,
-            length: 0.8, // Percentage of screen width (0-1)
-            leftEnd: 1,  // 1 for one semicircle, 2 for two
-            rightEnd: 1, // 1 for one semicircle, 2 for two
-            leftSemicircleSize: 0, // Will be calculated based on bar height
-            rightSemicircleSize: 0, // Will be calculated based on bar height
-            successMessage: "Congratulations!" // Default success message
+            height: 64,
+            length: 0.8, 
+            leftEnd: 1,  
+            rightEnd: 1, 
+            leftSemicircleSize: 32,
+            rightSemicircleSize: 32,
+            successMessage: "Congratulations!", 
+            showButtons: true 
         };
 
-        // Canvas and context
         const canvas = document.getElementById('progressCanvas');
         const ctx = canvas.getContext('2d');
-        
-        // Success message element
+
         const successMessageEl = document.getElementById('successMessage');
-        
-        // Progress state
+
+        const controlsEl = document.getElementById('controls');
+        const restartBtn = document.getElementById('restartBtn');
+        const editBtn = document.getElementById('editBtn');
+
+        const overlay = document.getElementById('overlay');
+        const configPopup = document.getElementById('configPopup');
+
         let currentProgress = 0;
-        
-        // Colors
+
         const colors = {
             background: 'rgba(255, 255, 255, 0.3)',
-            progressStart: '#9333ea', // Purple
-            progressMiddle: '#ec4899', // Pink
-            progressEnd: '#ef4444', // Red
-            circleEmpty: '#f3e9f6', // Light gray
+            progressStart: '#9333ea', 
+            progressMiddle: '#ec4899', 
+            progressEnd: '#ef4444', 
+            circleEmpty: '#f3e9f6', 
             shadow: 'rgba(0, 0, 0, 0.1)'
         };
 
-        // Parse hash parameters
         function parseHash() {
             const hash = window.location.hash.substring(1);
             if (!hash) return;
@@ -87,37 +265,41 @@
             config.clicksToFull = parseInt(params.get('clicks')) || config.clicksToFull;
             config.rotation = parseInt(params.get('rotation')) || config.rotation;
             config.length = parseFloat(params.get('length')) / 100 || config.length;
+            config.height = parseInt(params.get('height')) || config.height;
             config.leftEnd = parseInt(params.get('leftEnd')) || config.leftEnd;
             config.rightEnd = parseInt(params.get('rightEnd')) || config.rightEnd;
-            
-            // We'll calculate these based on bar height later
+
             if (params.get('leftSemicircleSize')) {
                 config.leftSemicircleSize = parseInt(params.get('leftSemicircleSize'));
             }
             if (params.get('rightSemicircleSize')) {
                 config.rightSemicircleSize = parseInt(params.get('rightSemicircleSize'));
             }
-            
-            // Get success message if provided
+
             if (params.get('message')) {
                 config.successMessage = decodeURIComponent(params.get('message'));
             }
-            
-            // Handle base64 encoded JSON configuration
+
+            if (params.has('showButtons')) {
+                config.showButtons = params.get('showButtons') === 'true';
+            }
+
             if (params.get('b64')) {
                 try {
                     const decoded = atob(params.get('b64'));
                     const jsonConfig = JSON.parse(decoded);
-                    
-                    // Apply all properties from the decoded JSON to the config
+
                     Object.assign(config, jsonConfig);
                 } catch (error) {
                     console.error('Error decoding base64 configuration:', error);
                 }
             }
+
+            if (config.showButtons === undefined) {
+                config.showButtons = true;
+            }
         }
 
-        // Confetti effect function
         function fireConfetti() {
             const duration = 3000;
             const animationEnd = Date.now() + duration;
@@ -135,8 +317,7 @@
                 }
 
                 const particleCount = 50 * (timeLeft / duration);
-                
-                // Use different colors for confetti
+
                 confetti({
                     ...defaults,
                     particleCount,
@@ -152,7 +333,6 @@
             }, 250);
         }
 
-        // Create gradient for progress bar
         function createProgressGradient(x, width) {
             const gradient = ctx.createLinearGradient(x, 0, x + width, 0);
             gradient.addColorStop(0, colors.progressStart);
@@ -161,86 +341,72 @@
             return gradient;
         }
 
-        // Apply gradient to success message
         function applyGradientToMessage() {
             successMessageEl.style.backgroundImage = `linear-gradient(to right, ${colors.progressStart}, ${colors.progressMiddle}, ${colors.progressEnd})`;
         }
 
-        // Draw a circle with shadow
         function drawCircle(x, y, radius, color) {
             ctx.save();
-            
-            // Shadow
+
             ctx.shadowColor = colors.shadow;
             ctx.shadowBlur = 10;
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 0;
-            
-            // Circle
+
             ctx.beginPath();
             ctx.arc(x, y, radius, 0, Math.PI * 2);
             ctx.fillStyle = color;
             ctx.fill();
-            
+
             ctx.restore();
         }
 
-        // Draw progress bar and circles
         function drawProgress() {
-            // Clear canvas
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Calculate dimensions
-            const barHeight = 64; // 10% of height, max 64px
+
+            const barHeight = config.height || 64;
             const barWidth = canvas.width * config.length;
             const barX = (canvas.width - barWidth) / 2;
             const barY = (canvas.height - barHeight) / 2;
-            
-            // Calculate progress width
+
             const progressWidth = barWidth * (currentProgress / 100);
-            
-            // Calculate circle sizes
+
             const leftSize = config.leftSemicircleSize || barHeight / 2;
             const rightSize = config.rightSemicircleSize || barHeight / 2;
-            
-            // Save context for rotation
+
             ctx.save();
-            
-            // Translate to center for rotation
+
             ctx.translate(canvas.width / 2, canvas.height / 2);
             ctx.rotate(config.rotation * Math.PI / 180);
             ctx.translate(-canvas.width / 2, -canvas.height / 2);
-            
-            // Draw background bar
+
             ctx.fillStyle = colors.background;
             ctx.shadowColor = colors.shadow;
             ctx.shadowBlur = 10;
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 0;
             ctx.fillRect(barX, barY, barWidth, barHeight);
-            
-            // Draw progress bar
+
             ctx.fillStyle = createProgressGradient(barX, barWidth);
-            ctx.shadowBlur = 0; // No shadow for progress
+            ctx.shadowBlur = 0; 
             ctx.fillRect(barX, barY, progressWidth, barHeight);
-            
-            // Reset shadow
+
             ctx.shadowBlur = 0;
-            
-            // Draw left circles
+
             if (config.leftEnd >= 1) {
                 const leftCircle1X = barX;
                 const leftCircle1Y = barY + barHeight / 2;
-                
+
                 if (config.leftEnd >= 2) {
-                    // Two circles on left end
+
                     drawCircle(
                         leftCircle1X, 
                         leftCircle1Y - leftSize * 0.8, 
                         leftSize, 
                         createProgressGradient(barX, barWidth)
                     );
-                    
+
                     drawCircle(
                         leftCircle1X, 
                         leftCircle1Y + leftSize * 0.8, 
@@ -248,7 +414,7 @@
                         createProgressGradient(barX, barWidth)
                     );
                 } else {
-                    // One circle on left end
+
                     drawCircle(
                         leftCircle1X, 
                         leftCircle1Y, 
@@ -257,21 +423,20 @@
                     );
                 }
             }
-            
-            // Draw right circles
+
             if (config.rightEnd >= 1) {
                 const rightCircle1X = barX + barWidth;
                 const rightCircle1Y = barY + barHeight / 2;
-                
+
                 if (config.rightEnd >= 2) {
-                    // Two circles on right end
+
                     drawCircle(
                         rightCircle1X, 
                         rightCircle1Y - rightSize * 0.8, 
                         rightSize, 
                         currentProgress >= 99 ? createProgressGradient(barX, barWidth) : colors.circleEmpty
                     );
-                    
+
                     drawCircle(
                         rightCircle1X, 
                         rightCircle1Y + rightSize * 0.8, 
@@ -279,7 +444,7 @@
                         currentProgress >= 99 ? createProgressGradient(barX, barWidth) : colors.circleEmpty
                     );
                 } else {
-                    // One circle on right end
+
                     drawCircle(
                         rightCircle1X, 
                         rightCircle1Y, 
@@ -288,29 +453,30 @@
                     );
                 }
             }
-            
-            // Restore context
+
             ctx.restore();
         }
 
-        // Show success message
         function showSuccessMessage() {
             successMessageEl.textContent = config.successMessage;
             applyGradientToMessage();
             successMessageEl.style.opacity = 1;
+
+            if (config.showButtons) {
+                document.getElementById('controls').style.opacity = 0.5;
+            }
         }
 
-        // Hide success message
         function hideSuccessMessage() {
             successMessageEl.style.opacity = 0;
+
+            document.getElementById('controls').style.opacity = 0;
         }
 
-        // Update progress
         function updateProgress(progress) {
             currentProgress = progress;
             drawProgress();
-            
-            // Fire confetti and show message when progress bar is full
+
             if (progress >= 100) {
                 fireConfetti();
                 showSuccessMessage();
@@ -319,31 +485,161 @@
             }
         }
 
-        // Resize canvas to window size
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             drawProgress();
         }
 
-        // Handle clicks
         function handleClick(event) {
             currentProgress = Math.min(currentProgress + (100 / config.clicksToFull), 100);
             updateProgress(currentProgress);
         }
 
-        // Initialize
-        function init() {
-            parseHash();
-            resizeCanvas();
+        function restartProgress() {
+            currentProgress = 0;
             updateProgress(0);
-            
-            // Event listeners
-            window.addEventListener('resize', resizeCanvas);
-            canvas.addEventListener('click', handleClick);
         }
 
-        // Start the app
+        function generateLink(configObj, encrypt = false) {
+            const params = new URLSearchParams();
+
+            if (encrypt) {
+
+                const jsonStr = JSON.stringify(configObj);
+                const b64 = btoa(jsonStr);
+                params.append('b64', b64);
+            } else {
+
+                params.append('clicks', configObj.clicksToFull);
+                params.append('rotation', configObj.rotation);
+                params.append('length', Math.round(configObj.length * 100));
+                params.append('height', configObj.height);
+                params.append('leftEnd', configObj.leftEnd);
+                params.append('rightEnd', configObj.rightEnd);
+
+                if (configObj.leftSemicircleSize) {
+                    params.append('leftSemicircleSize', configObj.leftSemicircleSize);
+                }
+
+                if (configObj.rightSemicircleSize) {
+                    params.append('rightSemicircleSize', configObj.rightSemicircleSize);
+                }
+
+                if (configObj.successMessage) {
+                    params.append('message', encodeURIComponent(configObj.successMessage));
+                }
+
+                params.append('showButtons', configObj.showButtons);
+            }
+
+            return window.location.origin + window.location.pathname + '#' + params.toString();
+        }
+
+        function prepareEditPopup() {
+
+            function syncRangeWithNumber(rangeId, numberId) {
+                const rangeInput = document.getElementById(rangeId);
+                const numberInput = document.getElementById(numberId);
+
+                rangeInput.addEventListener('input', () => {
+                    numberInput.value = rangeInput.value;
+                    applyConfig();
+                });
+
+                numberInput.addEventListener('input', () => {
+                    rangeInput.value = numberInput.value;
+                    applyConfig();
+                });
+            }
+
+            syncRangeWithNumber('clicksToFullRange', 'clicksToFull');
+            syncRangeWithNumber('rotationRange', 'rotation');
+            syncRangeWithNumber('lengthRange', 'length');
+            syncRangeWithNumber('heightRange', 'height');
+            syncRangeWithNumber('leftEndRange', 'leftEnd');
+            syncRangeWithNumber('rightEndRange', 'rightEnd');
+            syncRangeWithNumber('leftSemicircleSizeRange', 'leftSemicircleSize');
+            syncRangeWithNumber('rightSemicircleSizeRange', 'rightSemicircleSize');
+
+            const otherInputs = configPopup.querySelectorAll('input:not([type="range"]):not([id$="Range"])');
+            otherInputs.forEach(input => {
+                input.addEventListener('change', applyConfig);
+                input.addEventListener('input', applyConfig);
+            });
+
+            const link = generateLink(config, document.getElementById('encryptConfig').checked);
+            document.getElementById('shareableLink').value = link;
+
+            function closePopup() {
+                overlay.style.display = 'none';
+                configPopup.style.display = 'none';
+            }
+
+            overlay.addEventListener('click', closePopup);
+            document.getElementById('closePopup').addEventListener('click', closePopup);
+        }
+
+        function showEditPopup() {
+
+            document.getElementById('clicksToFull').value = config.clicksToFull;
+            document.getElementById('rotation').value = config.rotation;
+            document.getElementById('length').value = Math.round(config.length * 100);
+            document.getElementById('height').value = config.height;
+            document.getElementById('leftEnd').value = config.leftEnd;
+            document.getElementById('rightEnd').value = config.rightEnd;
+            document.getElementById('leftSemicircleSize').value = config.leftSemicircleSize || 32;
+            document.getElementById('rightSemicircleSize').value = config.rightSemicircleSize || 32;
+            document.getElementById('successMessageInput').value = config.successMessage;
+            document.getElementById('showButtons').checked = config.showButtons;
+
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('configPopup').style.display = 'block';
+        }
+
+        function applyConfig() {
+
+            const newConfig = {
+                clicksToFull: parseInt(document.getElementById('clicksToFull').value) || config.clicksToFull,
+                rotation: parseInt(document.getElementById('rotation').value) || config.rotation,
+                length: parseInt(document.getElementById('length').value) / 100 || config.length,
+                height: parseInt(document.getElementById('height').value) || config.height,
+                leftEnd: parseInt(document.getElementById('leftEnd').value) || config.leftEnd,
+                rightEnd: parseInt(document.getElementById('rightEnd').value) || config.rightEnd,
+                leftSemicircleSize: parseInt(document.getElementById('leftSemicircleSize').value) || config.leftSemicircleSize,
+                rightSemicircleSize: parseInt(document.getElementById('rightSemicircleSize').value) || config.rightSemicircleSize,
+                successMessage: document.getElementById('successMessageInput').value || "",
+                showButtons: document.getElementById('showButtons').checked
+            };
+
+            config = newConfig;
+
+            successMessageEl.textContent = config.successMessage;
+
+            const link = generateLink(config, document.getElementById('encryptConfig').checked);
+            document.getElementById('shareableLink').value = link;
+
+            drawProgress();
+        }
+
+        function init() {
+
+            resizeCanvas();
+
+            parseHash();
+
+            prepareEditPopup();
+
+            canvas.addEventListener('click', handleClick);
+            window.addEventListener('resize', resizeCanvas);
+            restartBtn.addEventListener('click', restartProgress);
+            editBtn.addEventListener('click', showEditPopup);
+
+            drawProgress();
+
+            document.getElementById('controls').style.opacity = 0;
+        }
+
         init();
     </script>
 </body>
